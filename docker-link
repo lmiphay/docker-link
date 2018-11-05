@@ -1,0 +1,68 @@
+#!/bin/bash
+
+if [[ $(id -u) -ne 0 ]]; then
+   echo "This script must be run as root" 
+   exit 1
+fi
+
+iplink()
+{
+    ip link "$@"
+}
+
+netexec()
+{
+    nsenter --target "$pid" --net "$@"
+}
+
+# set -x
+
+case "$1" in
+    start)
+	if [[ $# < 3 ]]; then
+	    echo "Usage: $(basename $0) start <container_name> <ip_address> [<bridge_name> <bridge_veth> <container_veth>]"
+	    echo ""
+	    echo "  Example - connect the container 'serv' to the bridge 'br0' with IP address of '192.168.5.31'"
+	    echo "           $(basename $0) start serv 192.168.1.31/24 br0"
+	    echo ""
+	    echo "  bridge_name defaults to br0"
+	    exit 1
+	fi
+	
+	shift
+	name="$1"
+	ip_address="$2"
+	bridge="${3:-br0}"
+	br_device="${4:-$name}"
+	cn_device="${5:-${name}c}"
+
+	router=$(ip route show to default | awk '{ print $3 }')  # # the IP address of the host's default router
+	broadcast=$(ip address show dev ${bridge} | awk '/inet / {print $4}')
+	pid=$(docker inspect --format '{{ .State.Pid }}' "${name}")
+
+	iplink add "${cn_device}" type veth peer name "${br_device}"
+	iplink set "${br_device}" master "${bridge}"
+
+	iplink set netns "$pid" dev "${cn_device}"
+
+	netexec ip addr add "${ip_address}" broadcast "${broadcast}" dev "${cn_device}"
+
+	iplink set "${br_device}" up
+	netexec ip link set "${cn_device}" up
+	
+	netexec ip route del default
+	netexec ip route add default via "${router}" dev "${cn_device}"
+	;;
+    stop)
+	if [[ $# != 2 ]]; then
+	    echo "usage: $(basename $0) stop <container_name>"
+	    exit 1
+	fi
+	iplink del "$2"
+	;;
+    *)
+	echo "usage: $(basename $0) start|stop ..."
+	exit 1
+esac
+
+exit 0
