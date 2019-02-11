@@ -1,0 +1,51 @@
+.\" Manpage for docker-link
+.TH man 8 "101 Jan 2019" "1.0" "docker-link man page"
+
+.SH NAME
+docker-link \- Bridge docker container(s) to external network(s)
+
+.SH SYNOPSIS
+
+docker-link start <container_name> <ip_address> [<bridge_name> <bridge_veth> <container_veth>]
+
+.SH DESCRIPTION
+Example: connect the container 'serv' to the bridge 'br0' with IP address of '192.168.5.31'
+
+docker-link start serv 192.168.1.31/24 br0
+
+.SH SETTINGS
+
+These settings are found in /etc/conf.d/docker-link.${SVCNAME}:
+.TP
+.BI CONTAINER
+The container to expose onto the bridge.
+
+.TP
+.BI IP_ADDRESS
+The IP address to use for the container on the bridge.
+
+.TP
+.BI BRIDGE
+The bridge the container should be connected to (default "br0").
+
+.TP
+.BI STARTUP_WAIT
+How long to wait for the container to appear (default 20 seconds).
+
+.SH FILES
+
+.TP
+.BI /var/log/docker-link.log
+docker-link logs when run from openrc(8)
+
+.SH BUGS
+There are some.
+
+.SH SEE ALSO
+docker(1), openrc(8)
+
+.SH AUTHOR
+Paul Healy
+
+.SH COPYRIGHT
+GNU GENERAL PUBLIC LICENSE Version 2
