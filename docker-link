@@ -60,8 +60,29 @@ case "$1" in
 	fi
 	iplink del "$2"
 	;;
+    wait)
+	if [[ $# < 2 ]]; then
+	    echo "usage: $(basename $0) wait <container_name> [<startup_wait>]"
+	    exit 1
+	fi
+
+	shift
+	container="$1"
+	startup_wait="${2:-20}"
+
+	count=0
+
+	until [ "$(docker inspect -f {{.State.Running}} $container)" == "true" ] ; do
+	    sleep 1.0
+	    let count+=1
+	    if [ $count -eq "${startup_wait:-20}" ] ; then
+		echo "Timed out waiting for container $container to start"
+		return 1
+	    fi
+	done
+	;;
     *)
-	echo "usage: $(basename $0) start|stop ..."
+	echo "usage: $(basename $0) start|stop|wait"
 	exit 1
 esac
 
