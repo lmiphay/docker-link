@@ -20,7 +20,7 @@ wait_up()
 	sleep 1.0;
 	let count+=1
 	if [ $count -eq "${STARTUP_WAIT:-20}" ] ; then
-	    dl_log "Failed to start container $container"
+	    dl_log "Timed out waiting for container $container to start"
 	    return 1
 	fi
     done
