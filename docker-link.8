@@ -8,10 +8,24 @@ docker-link \- Bridge docker container(s) to external network(s)
 
 docker-link start <container_name> <ip_address> [<bridge_name> <bridge_veth> <container_veth>]
 
+docker-link stop <container_name>
+
+docker-link wait <container_name> [<startup_wait>]
+
 .SH DESCRIPTION
-Example: connect the container 'serv' to the bridge 'br0' with IP address of '192.168.5.31'
+Examples:
+
+1. connect the container 'serv' to the bridge 'br0' with IP address of '192.168.5.31':
 
 docker-link start serv 192.168.1.31/24 br0
+
+2. remove a previously created pair of interfaces for the container 'serv':
+
+docker-link stop serv
+
+3. wait for a container 'serv' to start:
+
+docker-link wait serv
 
 .SH SETTINGS
 
@@ -39,7 +53,7 @@ How long to wait for the container to appear (default 20 seconds).
 docker-link logs when run from openrc(8)
 
 .SH BUGS
-There are some.
+Report issues to: https://github.com/lmiphay/docker-link/issues
 
 .SH SEE ALSO
 docker(1), openrc(8)
